@@ -34,5 +34,22 @@ CREATE TABLE account (
 	CONSTRAINT FK_account_tenmo_user FOREIGN KEY (user_id) REFERENCES tenmo_user (user_id)
 );
 
+CREATE SEQUENCE seq_transaction_id
+  INCREMENT BY 1
+  START WITH 3001
+  NO MAXVALUE;
+
+CREATE TABLE transaction (
+    transaction_id int NOT NULL DEFAULT nextval('seq_transaction_id'),
+    from_user_id int NOT NULL,
+    to_user_id int NOT NULL,
+    status varchar(10) NOT NULL,
+    amount numeric(13, 2) NOT NULL CHECK (amount > 0), --positive
+    timestamp date NOT NULL,
+    CONSTRAINT PK_transaction PRIMARY KEY (transaction_id),
+    CONSTRAINT FK_transaction_tenmo_user_to FOREIGN KEY (to_user_id) REFERENCES tenmo_user (user_id),
+    CONSTRAINT FK_transaction_tenmo_user_from FOREIGN KEY (from_user_id) REFERENCES tenmo_user (user_id),
+    CONSTRAINT
+);
 
 COMMIT;
