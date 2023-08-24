@@ -7,11 +7,12 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.parameters.P;
+import org.springframework.stereotype.Component;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-
+@Component
 public class JdbcAccountDao implements AccountDao{
     private JdbcTemplate jdbcTemplate;
     public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
@@ -19,16 +20,16 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public List<Account> getAllAccounts() {
-        List<Account> allAccounts = new ArrayList<>();
-        String sql =    "SELECT tenmo_user.username, account_id, balance " +
+    public Account getAccount(String username) {
+        Account account = null;
+        String sql =    "SELECT tenmo_user.username, balance " +
                         "FROM account " +
                         "JOIN tenmo_user ON tenmo_user.user_id = account.user_id;";
                 SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-        while (results.next()) {
-            allAccounts.add(mapRowToAccount(results));
+        if (results.next()) {
+           account= mapRowToAccount(results);
         }
-        return allAccounts;
+        return account;
     }
 
     @Override
@@ -44,17 +45,17 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public List<Account> findAccountsByUsername(String username) {
-        List<Account> allUsersAccounts = new ArrayList<>();
+    public Account findAccountsByUsername(String username) {
+       Account byUsername= null;
         String sql =    "SELECT tenmo_user.username, account_id, balance " +
                 "FROM account " +
                 "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
                 "WHERE tenmo_user.username = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
-        while (results.next()) {
-            allUsersAccounts.add(mapRowToAccount(results));
+        if (results.next()) {
+            byUsername =mapRowToAccount(results);
         }
-        return allUsersAccounts;
+        return byUsername;
     }
 
     @Override

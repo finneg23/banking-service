@@ -1,13 +1,18 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.exception.DaoException;
 import com.techelevator.tenmo.model.User;
+import com.techelevator.tenmo.model.UserDTO;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +21,7 @@ import java.util.List;
 public class JdbcUserDao implements UserDao {
 
     private JdbcTemplate jdbcTemplate;
+    private  JdbcAccountDao accountDao;
 
     public JdbcUserDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -43,7 +49,16 @@ public class JdbcUserDao implements UserDao {
         }
         return users;
     }
-
+    @Override
+    public List<UserDTO> getAllUsername() {
+        List<UserDTO> usernames = new ArrayList<>();
+        String sql = "SELECT username FROM tenmo_user;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+        while (results.next()) {
+          usernames.add(new UserDTO(results.getString("username")));
+        }
+        return usernames;
+    }
     @Override
     public User findByUsername(String username) throws UsernameNotFoundException {
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE username ILIKE ?;";
@@ -67,9 +82,13 @@ public class JdbcUserDao implements UserDao {
             return false;
         }
 
-        // TODO: Create the account record with initial balance
-
+        // TODO(DONE): Create the account record with initial balance
+        String sql2 = "INSERT INTO account (user_id, balance) " +
+                "VALUES (?, ?) ;";
+        BigDecimal balance = BigDecimal.valueOf(1000.0);
+        jdbcTemplate.update(sql2,newUserId,balance);
         return true;
+
     }
 
     private User mapRowToUser(SqlRowSet rs) {
@@ -80,5 +99,11 @@ public class JdbcUserDao implements UserDao {
         user.setActivated(true);
         user.setAuthorities("USER");
         return user;
+
+    }
+    private  User mapToUsername ( SqlRowSet rs){
+        User username = new User();
+        username.setUsername(rs.getString("username"));
+        return  username;
     }
 }
