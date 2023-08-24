@@ -24,7 +24,7 @@ public class JdbcAccountDao implements AccountDao{
         Account account = null;
         String sql =    "SELECT tenmo_user.username, balance " +
                         "FROM account " +
-                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id;";
+                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_idgit commit;";
                 SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
         if (results.next()) {
            account= mapRowToAccount(results);
