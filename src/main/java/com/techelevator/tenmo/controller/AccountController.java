@@ -2,6 +2,7 @@ package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.model.PrimaryAccountDTO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +23,8 @@ public class AccountController {
 
     //TODO: need to modify to get one account for the MVP
     @RequestMapping(path ="/account", method = RequestMethod.GET)
-    public Account getAccount(Principal principal){
-        return accountDao.getAccount(principal.getName());
+    public PrimaryAccountDTO getAccount(Principal principal){
+        return accountDao.findAccountByUsername(principal.getName());
     }
 
 

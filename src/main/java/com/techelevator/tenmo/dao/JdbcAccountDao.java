@@ -2,6 +2,7 @@ package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.exception.DaoException;
 import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.model.PrimaryAccountDTO;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,8 +25,8 @@ public class JdbcAccountDao implements AccountDao{
         Account account = null;
         String sql =    "SELECT tenmo_user.username, balance " +
                         "FROM account " +
-                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_idgit commit;";
-                SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id;";
+                SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
         if (results.next()) {
            account= mapRowToAccount(results);
         }
@@ -45,17 +46,18 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public Account findAccountsByUsername(String username) {
-       Account byUsername= null;
-        String sql =    "SELECT tenmo_user.username, account_id, balance " +
+    public PrimaryAccountDTO findAccountByUsername(String username) {
+        PrimaryAccountDTO foundAccount = new PrimaryAccountDTO();
+        String sql =    "SELECT tenmo_user.username, balance " +
                 "FROM account " +
                 "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
-                "WHERE tenmo_user.username = ?;";
+                "WHERE tenmo_user.username ILIKE ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
         if (results.next()) {
-            byUsername =mapRowToAccount(results);
+            foundAccount.setUsername(username);
+            foundAccount.setBalance(results.getBigDecimal("balance"));
         }
-        return byUsername;
+        return foundAccount;
     }
 
     @Override
