@@ -60,11 +60,11 @@ public class JdbcTransactionDao implements TransactionDao{
 
         try {
             if (transaction.getTo().equals(account.getUsername())) {
-                throw new DaoException("You cannot make a transaction to yourself");
+                throw new DaoException("You cannot make a transaction to yourself.");
             }
 
             if (transaction.getTransferAmount().compareTo(account.getBalance()) == 1) {
-                throw new DaoException("Balance is not enough to transfer");
+                throw new DaoException("Insufficient funds.");
             }
 
             Integer newTransactionId = jdbcTemplate.queryForObject(sql, Integer.class,
@@ -74,9 +74,8 @@ public class JdbcTransactionDao implements TransactionDao{
         } catch (DataIntegrityViolationException e) {
             throw new DaoException("The integrity of the data will be compromised.");
         } catch (NullPointerException e) {
-            throw new DaoException("The account id was found to be null.");
+            throw new DaoException("The account ID was not found.");
         }
-
         updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
 
         return newTransaction;

@@ -4,7 +4,7 @@ import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public class CreateTransactionDTO {
-    @Positive(message = "the amount much be greather than 0")
+    @Positive(message = "Your transfer/request must be a positive number.")
     private BigDecimal transferAmount;
     private String to;
 

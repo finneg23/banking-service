@@ -12,7 +12,7 @@ USER:
 *ERROR on endpoint path contains account #, balance, transfer info
 *ERROR on getting balance of a user other than principal
 *ERROR on getting transactions of a user other than principal
-*ERROR on getting transaction id of a user other than principal
+*ERROR on getting transaction id of a user other than principal -- does this mean the transactions are only viewable by the principal?
 
 SEND TRANSACTIONS:
 *correct amount transferred w/ different values
@@ -29,7 +29,7 @@ SEND TRANSACTIONS:
 *ERROR on negative amount from client request
 *ERROR on 0 amount from client request
 *ERROR on sending invalid float point values, e.g. $0.001
-*ERROR on send amount more than balance from client request (unsufficient funds)
+*ERROR on send amount more than balance from client request (insufficient funds)
 *ERROR on sender not matching username from client request
 
 RECEIVE TRANSACTIONS:

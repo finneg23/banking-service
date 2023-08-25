@@ -96,6 +96,7 @@ public class JdbcAccountDao implements AccountDao{
         throw new AccountNotFoundException("Account " + accountId + " was not found.");
     }
 
+
     private Account mapRowToAccount(SqlRowSet results) {
         Account account = new Account();
         account.setAccountId(results.getInt("account_id"));
