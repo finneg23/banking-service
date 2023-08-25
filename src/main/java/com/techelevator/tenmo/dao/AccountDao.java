@@ -4,6 +4,7 @@ import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.PrimaryAccountDTO;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface AccountDao {
@@ -11,6 +12,7 @@ public interface AccountDao {
     Account getAccountById(int accountId) throws AccountNotFoundException;
     PrimaryAccountDTO findAccountByUsername(String username);
     Account createAccount(Account account);
-    Account updateBalance(int accountId);
+    BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException;
 
 }
+

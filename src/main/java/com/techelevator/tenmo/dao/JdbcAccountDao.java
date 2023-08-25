@@ -11,6 +11,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 @Component
@@ -23,9 +24,10 @@ public class JdbcAccountDao implements AccountDao{
     @Override
     public Account getAccount(String username) {
         Account account = null;
-        String sql =    "SELECT tenmo_user.username, balance " +
+        String sql =    "SELECT tenmo_user.username, account.balance, account.account_id " +
                         "FROM account " +
-                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id;";
+                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+                        "WHERE tenmo_user.username = ?;";
                 SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
         if (results.next()) {
            account= mapRowToAccount(results);
@@ -81,24 +83,21 @@ public class JdbcAccountDao implements AccountDao{
         return newAccount;
     }
 
-    @Override
-    public Account updateBalance(int accountId) {
-        Account accountToUpdate = null;
-        int rowsAffected = 0;
-        String sql1 =    "UPDATE account SET balance = balance + ? " +
-                        "FROM account JOIN transaction ON account.user_id = transaction.to_user_id " +
-                        "WHERE account_id = ? AND from_user_id != to_user_id;";
 
-        String sql2 =    "UPDATE account SET balance = balance - ? " +
-                        "FROM account JOIN transaction ON account.user_id = transaction.from_user_id " +
-                        "WHERE account_id = ? AND amount < balance AND from_user_id != to_user_id;";
-        return null;
-        //UPDATE account SET balance = balance + transaction.amount where transaction.transaction_id = ?
-        // AND status = 'APPROVED';
+    @Override
+    public BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException {
+        String sql =    "SELECT balance " +
+                "FROM account " +
+                "WHERE account_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+        if (results.next()) {
+            return results.getBigDecimal("balance");
+        }
+        throw new AccountNotFoundException("Account " + accountId + " was not found.");
     }
 
     private Account mapRowToAccount(SqlRowSet results) {
-        Account account = null;
+        Account account = new Account();
         account.setAccountId(results.getInt("account_id"));
         account.setUsername(results.getString("username"));
         account.setBalance(results.getBigDecimal("balance"));
