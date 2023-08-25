@@ -2,6 +2,7 @@ package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.exception.DaoException;
 import com.techelevator.tenmo.exception.TransactionNotFoundException;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.CreateTransactionDTO;
 import com.techelevator.tenmo.model.Transaction;
 import com.techelevator.tenmo.model.TransactionDTO;
@@ -15,11 +16,12 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 @Component
 public class JdbcTransactionDao implements TransactionDao{
     private JdbcTemplate jdbcTemplate;
-    private AccountDao accountDao;
+
     public JdbcTransactionDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -51,32 +53,58 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public TransactionDTO create(CreateTransactionDTO transaction,String username) {
+    public TransactionDTO create(CreateTransactionDTO transaction, Account account) {
 
         TransactionDTO newTransaction = null;
 
         String sql = "INSERT INTO transaction (from_username, to_username, status, amount, timestamp) " +
-                "SELECT ?, ?, 'approved', ?, CURRENT_DATE " +
-                "WHERE ? < (SELECT balance FROM account JOIN tenmo_user " +
-                "ON tenmo_user.user_id = account.user_id " +
-                "WHERE tenmo_user.username ILIKE ?);";
+                "VALUES (?, ?, 'approved', ?, ?) RETURNING transaction_id;";
 
         try {
-            if (transaction.getTo().equals(username)) {
+            // check for sender and receiver to be different
+            if (transaction.getTo().equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself");
             }
 
+            // check for transfer amount must be less than sender's balance
+            // view .compareTo method of BigDecimal for understanding
+            if (transaction.getTransferAmount().compareTo(account.getBalance()) == 1) {
+                throw new DaoException("Balance is not enough to transfer");
+            }
+
             Integer newTransactionId = jdbcTemplate.queryForObject(sql, Integer.class,
-                    username, transaction.getTo(), transaction.getTransferAmount(),transaction.getTransferAmount(),username);
+                    account.getUsername(), transaction.getTo(), transaction.getTransferAmount(), new Date());
 
             newTransaction = getTransactionById(newTransactionId);
         } catch (DataIntegrityViolationException e) {
-            System.out.println(e.getMessage() + "-----------------------");
-            //throw new DaoException("The integrity of the data will be compromised.");
+            throw new DaoException("The integrity of the data will be compromised.");
         } catch (NullPointerException e) {
             throw new DaoException("The account id was found to be null.");
         }
+
+        // helper method to update accounts of receiver and sender after update the transaction table
+        updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
+
         return newTransaction;
+    }
+
+    private void updateAccounts(String receiver, String sender, BigDecimal amount) {
+        String sqlReceiver = "UPDATE account AS a SET balance = balance + ? " +
+                "FROM tenmo_user AS u WHERE a.user_id = u.user_id " +
+                "AND u.username = ?";
+
+        String sqlSender = "UPDATE account AS a SET balance = balance - ? " +
+                "FROM tenmo_user AS u WHERE a.user_id = u.user_id " +
+                "AND u.username = ?";
+
+        try {
+           jdbcTemplate.update(sqlReceiver, amount, receiver);
+           jdbcTemplate.update(sqlSender, amount, sender);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("The integrity of the data will be compromised.");
+        } catch (NullPointerException e) {
+            throw new DaoException("The account id was found to be null.");
+        }
     }
 
     @Override

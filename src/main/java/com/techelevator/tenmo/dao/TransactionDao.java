@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.CreateTransactionDTO;
 import com.techelevator.tenmo.model.Transaction;
 import com.techelevator.tenmo.model.TransactionDTO;
@@ -12,7 +13,7 @@ public interface TransactionDao {
     List<Transaction> allTransactions();
     List<TransactionDTO> allTransactionsByUsername(String username);
 //    TransactionDTO createTransaction(Transaction transaction);
-    public TransactionDTO create(CreateTransactionDTO transaction, String username);
+    public TransactionDTO create(CreateTransactionDTO transaction, Account account);
 
     TransactionDTO getTransactionById(int transactionId);
 

@@ -1,6 +1,8 @@
 package com.techelevator.tenmo.controller;
 
+import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransactionDao;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.CreateTransactionDTO;
 import com.techelevator.tenmo.model.Transaction;
 import com.techelevator.tenmo.model.TransactionDTO;
@@ -15,9 +17,11 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public class TransferController {
     private TransactionDao transactionDao;
+    private AccountDao accountDao;
 
-    public TransferController(TransactionDao transactionDao) {
+    public TransferController(TransactionDao transactionDao, AccountDao accountDao) {
         this.transactionDao = transactionDao;
+        this.accountDao = accountDao;
     }
 
     @RequestMapping(path = "/transactions", method = RequestMethod.GET)
@@ -27,7 +31,12 @@ public class TransferController {
 
     @RequestMapping(path = "/transactions", method = RequestMethod.POST)
     public TransactionDTO createTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
-        return transactionDao.create(transaction,principal.getName());
+        // need to get the account of current user
+        Account myAccount = accountDao.getAccount(principal.getName());
+
+        // using CreateTransactionDTO for getting --receiver username-- and --amountTransfer--
+        // using Account for getting --sender username-- of sender and --current balance--
+        return transactionDao.create(transaction,myAccount);
     }
 
     @RequestMapping(path ="/transactions/{id}", method = RequestMethod.GET)

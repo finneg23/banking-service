@@ -24,9 +24,10 @@ public class JdbcAccountDao implements AccountDao{
     @Override
     public Account getAccount(String username) {
         Account account = null;
-        String sql =    "SELECT tenmo_user.username, balance " +
+        String sql =    "SELECT tenmo_user.username, account.balance, account.account_id " +
                         "FROM account " +
-                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id;";
+                        "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+                        "WHERE tenmo_user.username = ?;";
                 SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
         if (results.next()) {
            account= mapRowToAccount(results);
@@ -111,7 +112,7 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     private Account mapRowToAccount(SqlRowSet results) {
-        Account account = null;
+        Account account = new Account();
         account.setAccountId(results.getInt("account_id"));
         account.setUsername(results.getString("username"));
         account.setBalance(results.getBigDecimal("balance"));

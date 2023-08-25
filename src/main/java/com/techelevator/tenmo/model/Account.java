@@ -11,6 +11,7 @@ public class Account {
     private Set<Authority> authorities = new HashSet<>();
     private String username;
 
+    public Account () {}
     public Account(int accountId, int userId, BigDecimal balance, Set<Authority> authorities, String username) {
         this.accountId = accountId;
         this.userId = userId;
