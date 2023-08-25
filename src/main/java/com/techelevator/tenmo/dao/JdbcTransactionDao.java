@@ -25,10 +25,8 @@ public class JdbcTransactionDao implements TransactionDao{
     public JdbcTransactionDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-    @Override
-    public List<Transaction> allTransactions() {
-        return null;
-    }
+
+
 
     @Override
     public List<TransactionDTO> allTransactionsByUsername(String username) {
@@ -61,13 +59,10 @@ public class JdbcTransactionDao implements TransactionDao{
                 "VALUES (?, ?, 'approved', ?, ?) RETURNING transaction_id;";
 
         try {
-            // check for sender and receiver to be different
             if (transaction.getTo().equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself");
             }
 
-            // check for transfer amount must be less than sender's balance
-            // view .compareTo method of BigDecimal for understanding
             if (transaction.getTransferAmount().compareTo(account.getBalance()) == 1) {
                 throw new DaoException("Balance is not enough to transfer");
             }
@@ -82,7 +77,6 @@ public class JdbcTransactionDao implements TransactionDao{
             throw new DaoException("The account id was found to be null.");
         }
 
-        // helper method to update accounts of receiver and sender after update the transaction table
         updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
 
         return newTransaction;
@@ -118,32 +112,7 @@ public class JdbcTransactionDao implements TransactionDao{
         throw new TransactionNotFoundException("Transaction" + transactionId + "not found.");
     }
 
-    private Transaction mapRowToTransaction(SqlRowSet results) {
-        Transaction transaction = null;
-        transaction.setFromUsername(results.getString("from_username"));
-        transaction.setToUserId(results.getString("to_username"));
-        transaction.setAmount(results.getBigDecimal("amount"));
-        transaction.setStatus(results.getString("status"));
-        transaction.setTimestamp(results.getDate("timestamp").toLocalDate());
-        return transaction;
-    }
 
-    private int getAccountId( String fromUsername) throws AccountNotFoundException{
-        String sql =" SELECT account_id FROM account JOIN tenmo_user " +
-                " ON account.user_id = tenmo_user.user_id" +
-                "JOIN transaction On tenmo_user.username = transaction.fromUsername " +
-                "WHERE transaction.fromUsername = ?; ";
-        SqlRowSet res = jdbcTemplate.queryForRowSet(sql,fromUsername);
-        if(res.next()){
-            return res.getInt("account_id");
-        }
-            throw new AccountNotFoundException( "Cannot find the Account Id");
 
-    }
 }
 
-
-//        String sql =    "SELECT transaction_id, amount, username" +
-//                        "(SELECT username FROM tenmo_user " +
-//                        "JOIN transaction ON tenmo_user.user_id = transaction.from_user_id " +
-//                        "WHERE username = ?) AS to_username";

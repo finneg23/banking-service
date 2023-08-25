@@ -83,24 +83,9 @@ public class JdbcAccountDao implements AccountDao{
         return newAccount;
     }
 
-    @Override
-    public Account updateBalance(int accountId) {
-        Account accountToUpdate = null;
-        int rowsAffected = 0;
-        String sql1 =    "UPDATE account SET balance = balance + ? " +
-                        "FROM account JOIN transaction ON account.user_id = transaction.to_user_id " +
-                        "WHERE account_id = ? AND from_user_id != to_user_id;";
-
-        String sql2 =    "UPDATE account SET balance = balance - ? " +
-                        "FROM account JOIN transaction ON account.user_id = transaction.from_user_id " +
-                        "WHERE account_id = ? AND amount < balance AND from_user_id != to_user_id;";
-        return null;
-        //UPDATE account SET balance = balance + transaction.amount where transaction.transaction_id = ?
-        // AND status = 'APPROVED';
-    }
 
     @Override
-    public BigDecimal getBalancebyAccountId(int accountId) throws AccountNotFoundException {
+    public BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException {
         String sql =    "SELECT balance " +
                 "FROM account " +
                 "WHERE account_id = ?;";

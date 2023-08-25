@@ -10,7 +10,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public interface TransactionDao {
-    List<Transaction> allTransactions();
+
     List<TransactionDTO> allTransactionsByUsername(String username);
 //    TransactionDTO createTransaction(Transaction transaction);
     public TransactionDTO create(CreateTransactionDTO transaction, Account account);

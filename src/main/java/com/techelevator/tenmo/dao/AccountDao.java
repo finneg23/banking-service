@@ -12,7 +12,7 @@ public interface AccountDao {
     Account getAccountById(int accountId) throws AccountNotFoundException;
     PrimaryAccountDTO findAccountByUsername(String username);
     Account createAccount(Account account);
-    Account updateBalance(int accountId);
-    BigDecimal getBalancebyAccountId(int accountId) throws AccountNotFoundException;
+    BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException;
 
 }
+

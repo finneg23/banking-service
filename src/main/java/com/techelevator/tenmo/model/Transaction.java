@@ -10,6 +10,7 @@ public class Transaction {
     private String status;
     private BigDecimal amount;
     private LocalDate timestamp;
+    public Transaction() {}
 
     public Transaction(int transactionId, String fromUsername, String toUsername, String status, BigDecimal amount, LocalDate timestamp) {
         this.transactionId = transactionId;
