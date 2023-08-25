@@ -20,8 +20,6 @@ public class JdbcUserDaoTests extends BaseDaoTests{
 
     private JdbcUserDao sut;
     private JdbcAccountDao sut2;
-    private AuthenticationController tester;
-    private RegisterUserDTO registerUserDTO;
 
     @Before
     public void setup() {

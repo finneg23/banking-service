@@ -12,8 +12,7 @@ USER:
 *ERROR on endpoint path contains account #, balance, transfer info
 *ERROR on getting balance of a user other than principal
 *ERROR on getting transactions of a user other than principal
-*ERROR on getting transaction id of a user other than principal -- does this mean the transactions are only viewable by the principal?
-
+*ERROR on getting transaction id of a user other than principal
 SEND TRANSACTIONS:
 *correct amount transferred w/ different values
 *correct balance after sending transfers
