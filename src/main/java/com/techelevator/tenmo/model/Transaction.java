@@ -5,20 +5,21 @@ import java.time.LocalDate;
 
 public class Transaction {
     private int transactionId;
-    private int fromUserId;
-    private int toUserId;
+    private String fromUsername;
+    private String toUsername;
     private String status;
     private BigDecimal amount;
     private LocalDate timestamp;
 
-    public Transaction(int transactionId, int fromUserId, int toUserId, String status, BigDecimal amount, LocalDate timestamp) {
+    public Transaction(int transactionId, String fromUsername, String toUsername, String status, BigDecimal amount, LocalDate timestamp) {
         this.transactionId = transactionId;
-        this.fromUserId = fromUserId;
-        this.toUserId = toUserId;
+        this.fromUsername = fromUsername;
+        this.toUsername = toUsername;
         this.status = status;
         this.amount = amount;
         this.timestamp = timestamp;
     }
+
 
     public int getTransactionId() {
         return transactionId;
@@ -28,20 +29,20 @@ public class Transaction {
         this.transactionId = transactionId;
     }
 
-    public int getFromUserId() {
-        return fromUserId;
+    public String getFromUsername() {
+        return fromUsername;
     }
 
-    public void setFromUserId(int fromUserId) {
-        this.fromUserId = fromUserId;
+    public void setFromUsername(String getFromUserId) {
+        this.fromUsername = fromUsername;
     }
 
-    public int getToUserId() {
-        return toUserId;
+    public String getToUsername() {
+        return getToUsername();
     }
 
-    public void setToUserId(int toUserId) {
-        this.toUserId = toUserId;
+    public void setToUserId(String getToUsername) {
+        this.toUsername = toUsername;
     }
 
     public String getStatus() {
@@ -72,7 +73,7 @@ public class Transaction {
     public String toString() {
         return "Account{" +
                 "id=" + transactionId +
-                ", from='" + fromUserId + '\'' +
-                ", to='" + toUserId + '\'';
+                ", from='" + fromUsername + '\'' +
+                ", to='" + toUsername + '\'';
     }
 }

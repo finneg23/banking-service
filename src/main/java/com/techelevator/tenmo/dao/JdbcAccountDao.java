@@ -11,6 +11,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 @Component
@@ -95,6 +96,18 @@ public class JdbcAccountDao implements AccountDao{
         return null;
         //UPDATE account SET balance = balance + transaction.amount where transaction.transaction_id = ?
         // AND status = 'APPROVED';
+    }
+
+    @Override
+    public BigDecimal getBalancebyAccountId(int accountId) throws AccountNotFoundException {
+        String sql =    "SELECT balance " +
+                "FROM account " +
+                "WHERE account_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+        if (results.next()) {
+            return results.getBigDecimal("balance");
+        }
+        throw new AccountNotFoundException("Account " + accountId + " was not found.");
     }
 
     private Account mapRowToAccount(SqlRowSet results) {
