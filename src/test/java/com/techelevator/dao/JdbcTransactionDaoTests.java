@@ -1,6 +1,7 @@
 package com.techelevator.dao;
 
 import com.techelevator.tenmo.dao.*;
+import com.techelevator.tenmo.exception.DaoException;
 import com.techelevator.tenmo.model.TransactionDTO;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,6 +27,14 @@ public class JdbcTransactionDaoTests extends BaseDaoTests{
     }
 
     @Test
+    public void getAllTransactionsByUsernameTest() {
+        List<TransactionDTO> res = sut3.allTransactionsByUsername("bob");
+
+        Assert.assertEquals(3001, res.get(0).getTransactionId());
+        Assert.assertEquals(3002, res.get(1).getTransactionId());
+    }
+
+    @Test
     public void transactionCreatedCorrectly() {
         TransactionDTO actualTransactionDTO = sut3.create(TEST_TRANSACTIONDTO_1, sut2.getAccount("bob"));
         Assert.assertEquals(TEST_TRANSACTIONDTO_1.getTransactionId(), actualTransactionDTO.getTransactionId());
@@ -35,10 +44,57 @@ public class JdbcTransactionDaoTests extends BaseDaoTests{
     }
 
     @Test
-    public void getAllTransactionsByUsernameTest() {
-        List<TransactionDTO> res = sut3.allTransactionsByUsername("bob");
+    public void createTransactionWithInvalidUser() {
+        TEST_TRANSACTIONDTO_1.setFrom("zombie");
+        try {
+            sut3.create(TEST_TRANSACTIONDTO_1, sut2.getAccount("bob"));
+        } catch (Exception e) {
+            String message = "One of these users do not exist: (zombie / user). Check your spelling.";
+            Assert.assertEquals(message, e.getMessage());
+        }
+    }
 
-        Assert.assertEquals(3001, res.get(0).getTransactionId());
-        Assert.assertEquals(3002, res.get(1).getTransactionId());
+    @Test
+    public void createTransactionWithInvalidUsers() {
+        TEST_TRANSACTIONDTO_1.setFrom("test1");
+        try {
+            sut3.create(TEST_TRANSACTIONDTO_1, sut2.getAccount("bob"));
+        } catch (Exception e) {
+            String message = "You're not God. You can't make transfers happen between other people.";
+            Assert.assertEquals(message, e.getMessage());
+        }
+    }
+
+    @Test
+    public void createTransactionWithSameUser() {
+        TEST_TRANSACTIONDTO_1.setTo("bob");
+        try {
+            sut3.create(TEST_TRANSACTIONDTO_1, sut2.getAccount("bob"));
+        } catch (Exception e) {
+            String message = "You cannot make a transaction to yourself.";
+            Assert.assertEquals(message, e.getMessage());
+        }
+    }
+
+    @Test
+    public void createTransactionWithAmountLargerThanBalance() {
+        TEST_TRANSACTIONDTO_1.setTransferAmount(new BigDecimal(5000));
+        try {
+            sut3.create(TEST_TRANSACTIONDTO_1, sut2.getAccount("bob"));
+        } catch (Exception e) {
+            String message = "Insufficient funds.";
+            Assert.assertEquals(message, e.getMessage());
+        }
+    }
+
+    @Test
+    public void createTransactionWithNegativeAmount() {
+        TEST_TRANSACTIONDTO_1.setTransferAmount(new BigDecimal(-100));
+        try {
+            sut3.create(TEST_TRANSACTIONDTO_1, sut2.getAccount("bob"));
+        } catch (Exception e) {
+            String message = "Insufficient funds.";
+            Assert.assertEquals(message, e.getMessage());
+        }
     }
 }

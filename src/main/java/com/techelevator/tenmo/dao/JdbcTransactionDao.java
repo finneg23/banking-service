@@ -9,9 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,12 +71,8 @@ public class JdbcTransactionDao implements TransactionDao{
                 throw new DaoException("You cannot make a transaction to yourself.");
             }
 
-            if (transaction.getTransferAmount().compareTo(account.getBalance()) > 0) {
+            if (transaction.getTransferAmount().compareTo(account.getBalance()) > 0 || transaction.getTransferAmount().compareTo(BigDecimal.valueOf(0)) != 1) {
                 throw new DaoException("Insufficient funds.");
-            }
-
-            if (transaction.getTo().equals(account.getUsername())) {
-                throw new DaoException("Try the request endpoint for requests.");
             }
 
             if (transaction.getFrom().equals(account.getUsername())) {
