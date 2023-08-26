@@ -37,14 +37,14 @@ public class TransferController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/transactions/send")
-    public TransactionDTO createSendTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
+    public TransactionDTO createSendTransaction(@Valid @RequestBody TransactionDTO transaction, Principal principal) {
         Account myAccount = accountDao.getAccount(principal.getName());
         return transactionDao.create(transaction, myAccount);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/transactions/request")
-    public TransactionDTO createRequestTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
+    public TransactionDTO createRequestTransaction(@Valid @RequestBody TransactionDTO transaction, Principal principal) {
         Account myAccount = accountDao.getAccount(principal.getName());
         return transactionDao.create(transaction, myAccount);
     }

@@ -3,14 +3,14 @@ package com.techelevator.tenmo.model;
 import java.math.BigDecimal;
 
 public class TransactionDTO {
-    private int transferId;
-    private BigDecimal transferAmount;
+    private int transactionId;
+    private BigDecimal amount;
     private String to;
     private String from;
 
-    public TransactionDTO(int transferId, BigDecimal transferAmount, String from, String to) {
-        this.transferId = transferId;
-        this.transferAmount = transferAmount;
+    public TransactionDTO(int transactionId, BigDecimal transferAmount, String from, String to) {
+        this.transactionId = transactionId;
+        this.amount = transferAmount;
         this.from = from;
         this.to = to;
     }
@@ -18,20 +18,20 @@ public class TransactionDTO {
     public TransactionDTO() {
     }
 
-    public int getTransferId() {
-        return transferId;
+    public int getTransactionId() {
+        return transactionId;
     }
 
-    public void setTransferId(int transferId) {
-        this.transferId = transferId;
+    public void setTransactionId(int transactionId) {
+        this.transactionId = transactionId;
     }
 
     public BigDecimal getTransferAmount() {
-        return transferAmount;
+        return amount;
     }
 
     public void setTransferAmount(BigDecimal transferAmount) {
-        this.transferAmount = transferAmount;
+        this.amount = transferAmount;
     }
 
     public String getTo() {

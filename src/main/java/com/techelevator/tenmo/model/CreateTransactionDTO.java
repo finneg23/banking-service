@@ -6,12 +6,13 @@ import java.math.BigDecimal;
 public class CreateTransactionDTO {
     @Positive(message = "Your transfer/request must be a positive number.")
     private BigDecimal transferAmount;
-    private String to;
+    private String otherPartyUsername;
 
-    public CreateTransactionDTO(BigDecimal transferAmount, String to) {
+    public CreateTransactionDTO(BigDecimal transferAmount, String otherPartyUsername) {
         this.transferAmount = transferAmount;
-        this.to = to;
+        this.otherPartyUsername = otherPartyUsername;
     }
+
 
     public BigDecimal getTransferAmount() {
         return transferAmount;
@@ -21,11 +22,11 @@ public class CreateTransactionDTO {
         this.transferAmount = transferAmount;
     }
 
-    public String getTo() {
-        return to;
+    public String getOtherPartyUsername() {
+        return otherPartyUsername;
     }
 
     public void setTo(String to) {
-        this.to = to;
+        this.otherPartyUsername = to;
     }
 }
