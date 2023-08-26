@@ -5,6 +5,7 @@ import com.techelevator.tenmo.dao.TransactionDao;
 import com.techelevator.tenmo.exception.TransactionNotFoundException;
 import com.techelevator.tenmo.exception.UserDoesNotExistException;
 import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.model.CreateTransactionDTO;
 import com.techelevator.tenmo.model.TransactionDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,27 +35,29 @@ public class TransferController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/transactions/send")
-    public TransactionDTO createSendTransaction(@Valid @RequestBody TransactionDTO transaction, Principal principal) {
+    public TransactionDTO createSendTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
         Account myAccount = accountDao.getAccount(principal.getName());
-        return transactionDao.create(transaction, myAccount);
+        return transactionDao.create(transaction, myAccount, true);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/transactions/request")
-    public TransactionDTO createRequestTransaction(@Valid @RequestBody TransactionDTO transaction, Principal principal) {
+    public TransactionDTO createRequestTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
         Account myAccount = accountDao.getAccount(principal.getName());
-        return transactionDao.create(transaction, myAccount);
+        return transactionDao.create(transaction, myAccount, false);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping(path = "/transactions/request")
-    public TransactionDTO updateRequestTransaction(@Valid @RequestBody String status, Principal principal) {
-    //TODO make a handler method to update pending status to either denied or accepted
-    /*
-    IF status = accepted, accountDao.updateBalance ELSE IF status = denied, don't allow any more PUTs to this endpoint with the pathvariable {id}
-     */
-        //TODO call updateAccounts
-        return null;
+    @PutMapping(path = "/transactions/{transactionId}/status")
+    public TransactionDTO updateRequestTransaction(@PathVariable int transactionId, @Valid @RequestBody String requestStatus, Principal principal) {
+        TransactionDTO transaction = transactionDao.getTransactionById(transactionId);
+        if (!transaction.getStatus().equals("pending")) {
+            throw new TransactionNotFoundException("This is not a pending transaction.");
+        }
+
+        Account myAccount = accountDao.getAccount(principal.getName());
+
+        return transactionDao.updateTransactionStatus(transaction, requestStatus, myAccount);
     }
 
     @GetMapping(path ="/transactions/{id}")
