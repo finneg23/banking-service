@@ -60,7 +60,7 @@ VALUES ('1001', '1000'),
        ('1002', '1000');
 
 INSERT INTO transaction (from_username, to_username, status, amount, timestamp)
-VALUES  ('bob', 'user', 'approved', 100.00, CURRENT_DATE),
+VALUES  ('bob', 'user', 'pending', 100.00, CURRENT_DATE),
         ('user', 'bob', 'approved', 100.00, CURRENT_DATE);
 
 COMMIT;
