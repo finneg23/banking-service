@@ -60,7 +60,6 @@ public class JdbcTransactionDao implements TransactionDao{
         }
         String sql = "INSERT INTO transaction (from_username, to_username, status, amount, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?) RETURNING transaction_id;";
-        //TODO make approved a '?', and then pass in either 'approved' if principal.getName = from, or 'pending' otherwise
         try {
             if (!usernames.contains(transaction.getFrom()) || !usernames.contains(transaction.getTo())) {
                 throw new DaoException("One of these users do not exist: (" + transaction.getFrom() + " / " + transaction.getTo() + "). Check your spelling.");
@@ -69,7 +68,7 @@ public class JdbcTransactionDao implements TransactionDao{
             if (!transaction.getTo().equals(account.getUsername()) && !transaction.getFrom().equals(account.getUsername())) {
                 throw new DaoException("You're not God. You can't make transfers happen between other people.");
             }
-//
+
             if (transaction.getTo().equals(account.getUsername()) && transaction.getFrom().equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself.");
             }
@@ -78,12 +77,16 @@ public class JdbcTransactionDao implements TransactionDao{
                 throw new DaoException("Insufficient funds.");
             }
 
+            if (transaction.getTo().equals(account.getUsername())) {
+                throw new DaoException("Try the request endpoint for requests.");
+            }
+
             if (transaction.getFrom().equals(account.getUsername())) {
                 status = "approved";
             } else {status = "pending";}
 
             Integer newTransactionId = jdbcTemplate.queryForObject(sql, Integer.class,
-                    transaction.getTo(), transaction.getFrom(), status, transaction.getTransferAmount(), new Date());
+                    transaction.getFrom(), transaction.getTo(), status, transaction.getTransferAmount(), new Date());
 
             newTransaction = getTransactionById(newTransactionId);
         } catch (DataIntegrityViolationException e) {
