@@ -1,19 +1,14 @@
 package com.techelevator.dao;
 
 
-import com.techelevator.tenmo.controller.AuthenticationController;
 import com.techelevator.tenmo.dao.JdbcAccountDao;
 import com.techelevator.tenmo.dao.JdbcUserDao;
-import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.RegisterUserDTO;
 import com.techelevator.tenmo.model.User;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 
 

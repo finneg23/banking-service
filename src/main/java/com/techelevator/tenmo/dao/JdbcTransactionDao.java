@@ -126,7 +126,7 @@ public class JdbcTransactionDao implements TransactionDao{
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transactionId);
         if (results.next()) {
             return new TransactionDTO(results.getInt("transaction_id"), results.getBigDecimal("amount"),
-                    results.getString("to_username"), results.getString("from_username"));
+                    results.getString("from_username"), results.getString("to_username"));
         }
         throw new TransactionNotFoundException("Transaction " + transactionId + " not found.");
     }
