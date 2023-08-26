@@ -4,6 +4,7 @@ import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransactionDao;
 import com.techelevator.tenmo.exception.DaoException;
 import com.techelevator.tenmo.exception.TransactionNotFoundException;
+import com.techelevator.tenmo.exception.UserDoesNotExistException;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.CreateTransactionDTO;
 import com.techelevator.tenmo.model.Transaction;
@@ -31,14 +32,32 @@ public class TransferController {
 
     @GetMapping(path = "/transactions")
     public List<TransactionDTO> getAllTransactions(Principal principal) {
-    return transactionDao.allTransactionsByUsername(principal.getName());
+        return transactionDao.allTransactionsByUsername(principal.getName());
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(path = "/transactions")
-    public TransactionDTO createTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
+    @PostMapping(path = "/transactions/send")
+    public TransactionDTO createSendTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
         Account myAccount = accountDao.getAccount(principal.getName());
-        return transactionDao.create(transaction,myAccount);
+        return transactionDao.create(transaction, myAccount);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(path = "/transactions/request")
+    public TransactionDTO createRequestTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
+        Account myAccount = accountDao.getAccount(principal.getName());
+        return transactionDao.create(transaction, myAccount);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping(path = "/transactions/request")
+    public TransactionDTO updateRequestTransaction(@Valid @RequestBody String status, Principal principal) {
+    //TODO make a handler method to update pending status to either denied or accepted
+    /*
+    IF status = accepted, accountDao.updateBalance ELSE IF status = denied, don't allow any more PUTs to this endpoint with the pathvariable {id}
+     */
+        //TODO call updateAccounts
+        return null;
     }
 
     @GetMapping(path ="/transactions/{id}")
@@ -48,10 +67,16 @@ public class TransferController {
             return transactionById;
         }
         throw new TransactionNotFoundException("You are not a part of this transaction.");
+        //TODO make this return status as well
     }
 
     @ExceptionHandler
     public void handleTransactionNotFoundException(TransactionNotFoundException e, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_FORBIDDEN);
+    }
+
+    @ExceptionHandler
+    public void handleUserDoesNotExistException(UserDoesNotExistException e, HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 }

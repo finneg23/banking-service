@@ -18,7 +18,6 @@ public class AccountController {
         this.accountDao = accountDao;
     }
 
-    //TODO: need to modify to get one account for the MVP
     @GetMapping(path ="/accounts")
     public PrimaryAccountDTO getAccount(Principal principal){
         return accountDao.findAccountByUsername(principal.getName());

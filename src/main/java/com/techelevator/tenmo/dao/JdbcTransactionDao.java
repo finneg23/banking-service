@@ -60,7 +60,7 @@ public class JdbcTransactionDao implements TransactionDao{
         }
         String sql = "INSERT INTO transaction (from_username, to_username, status, amount, timestamp) " +
                 "VALUES (?, ?, 'approved', ?, ?) RETURNING transaction_id;";
-
+        //TODO make approved a '?', and then pass in either 'approved' if principal.getName = from, or 'pending' otherwise
         try {
             if (transaction.getTo().equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself.");
@@ -83,6 +83,7 @@ public class JdbcTransactionDao implements TransactionDao{
         } catch (NullPointerException e) {
             throw new DaoException("The account ID was not found.");
         }
+        //TODO if transaction.status.equalsapproved {          else
         updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
 
         return newTransaction;

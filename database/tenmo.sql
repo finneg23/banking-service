@@ -41,15 +41,14 @@ CREATE SEQUENCE seq_transaction_id
 
 CREATE TABLE transaction (
     transaction_id int NOT NULL DEFAULT nextval('seq_transaction_id'),
-    from_username varchar NOT NULL,
-    to_username varchar NOT NULL,
+    from_username varchar(50) NOT NULL,
+    to_username varchar(50) NOT NULL,
     status varchar(10) NOT NULL,
     amount numeric(13, 2) NOT NULL CHECK (amount > 0), --positive
     timestamp date NOT NULL,
     CONSTRAINT PK_transaction PRIMARY KEY (transaction_id),
     CONSTRAINT FK_transaction_tenmo_user_to FOREIGN KEY (to_username) REFERENCES tenmo_user (username),
     CONSTRAINT FK_transaction_tenmo_user_from FOREIGN KEY (from_username) REFERENCES tenmo_user (username)
-    CONSTRAINT
 );
 
 COMMIT;

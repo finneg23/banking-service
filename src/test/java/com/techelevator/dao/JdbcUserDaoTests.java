@@ -16,6 +16,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 
+
 public class JdbcUserDaoTests extends BaseDaoTests{
 
     private JdbcUserDao sut;
