@@ -31,7 +31,7 @@ public class JdbcTransactionDaoTests extends BaseDaoTests{
         sut3 = new JdbcTransactionDao(jdbcTemplate, sut1);
         sut2 = new JdbcAccountDao(jdbcTemplate);
     }
-/*TODO
+
     @Test
     public void transactionCreatedCorrectly() {
         TransactionDTO actualTransactionDTO = sut3.create(TEST_CREATETRANSACTIONDTO_1, sut2.getAccount("bob"));
@@ -40,5 +40,4 @@ public class JdbcTransactionDaoTests extends BaseDaoTests{
         Assert.assertEquals(TEST_TRANSACTIONDTO_1.getTo(), actualTransactionDTO.getTo());
         Assert.assertEquals(TEST_TRANSACTIONDTO_1.getTransferAmount(), actualTransactionDTO.getTransferAmount());
     }
- */
 }

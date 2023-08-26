@@ -13,7 +13,7 @@ public interface TransactionDao {
 
     List<TransactionDTO> allTransactionsByUsername(String username);
 //    TransactionDTO createTransaction(Transaction transaction);
-    public TransactionDTO create(TransactionDTO transaction, Account account);
+    public TransactionDTO create(CreateTransactionDTO transaction, Account account);
 
     TransactionDTO getTransactionById(int transactionId);
 

@@ -39,7 +39,7 @@ public class Transaction {
     }
 
     public String getToUsername() {
-        return toUsername;
+        return getToUsername();
     }
 
     public void setToUserId(String getToUsername) {

@@ -50,40 +50,32 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public TransactionDTO create(TransactionDTO transaction, Account account) {
+    public TransactionDTO create(CreateTransactionDTO transaction, Account account) {
+
         TransactionDTO newTransaction = null;
         List<String> usernames = new ArrayList<>();
         List<UserDTO> objectsWithUsernames = jdbcUserDao.getAllUsername();
-        String status = "";
         for (UserDTO users : objectsWithUsernames) {
             usernames.add(users.getUsername());
         }
         String sql = "INSERT INTO transaction (from_username, to_username, status, amount, timestamp) " +
-                "VALUES (?, ?, ?, ?, ?) RETURNING transaction_id;";
+                "VALUES (?, ?, 'approved', ?, ?) RETURNING transaction_id;";
         //TODO make approved a '?', and then pass in either 'approved' if principal.getName = from, or 'pending' otherwise
         try {
-            if (!usernames.contains(transaction.getFrom()) || !usernames.contains(transaction.getTo())) {
-                throw new DaoException("One of these users do not exist: (" + transaction.getFrom() + " / " + transaction.getTo() + "). Check your spelling.");
-            }
-
-            if (!transaction.getTo().equals(account.getUsername()) && !transaction.getFrom().equals(account.getUsername())) {
-                throw new DaoException("You're not God. You can't make transfers happen between other people.");
-            }
-//
-            if (transaction.getTo().equals(account.getUsername()) && transaction.getFrom().equals(account.getUsername())) {
+            if (transaction.getTo().equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself.");
             }
 
-            if (transaction.getTransferAmount().compareTo(account.getBalance()) > 0) {
+            if (transaction.getTransferAmount().compareTo(account.getBalance()) == 1) {
                 throw new DaoException("Insufficient funds.");
             }
 
-            if (transaction.getFrom().equals(account.getUsername())) {
-                status = "approved";
-            } else {status = "pending";}
+            if (!usernames.contains(transaction.getTo())) {
+                throw new DaoException("This user does not exist. Check your spelling.");
+            }
 
             Integer newTransactionId = jdbcTemplate.queryForObject(sql, Integer.class,
-                    transaction.getTo(), transaction.getFrom(), status, transaction.getTransferAmount(), new Date());
+                    account.getUsername(), transaction.getTo(), transaction.getTransferAmount(), new Date());
 
             newTransaction = getTransactionById(newTransactionId);
         } catch (DataIntegrityViolationException e) {
@@ -91,10 +83,9 @@ public class JdbcTransactionDao implements TransactionDao{
         } catch (NullPointerException e) {
             throw new DaoException("The account ID was not found.");
         }
+        //TODO if transaction.status.equalsapproved {          else
+        updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
 
-        if(status.equals("approved")) {
-            updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
-        }
         return newTransaction;
     }
 
