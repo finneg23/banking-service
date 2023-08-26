@@ -9,9 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +28,7 @@ public class JdbcTransactionDao implements TransactionDao{
     @Override
     public List<TransactionDTO> allTransactionsByUsername(String username) {
         List<TransactionDTO> transactionDTOList = new ArrayList<>();
-        String sql1 = "SELECT transaction_id, amount, from_username, to_username FROM " +
+        String sql1 = "SELECT transaction_id, amount, from_username, to_username, status FROM " +
         "transaction WHERE from_username = ? OR to_username = ?;";
 
         try {
@@ -38,7 +36,7 @@ public class JdbcTransactionDao implements TransactionDao{
             while (results.next()) {
                 transactionDTOList.add(
                         new TransactionDTO(results.getInt("transaction_id"), results.getBigDecimal("amount"),
-                                results.getString("from_username"), results.getString("to_username")));
+                                results.getString("from_username"), results.getString("to_username"), results.getString("status")));
             }
         } catch(CannotGetJdbcConnectionException e) {
             throw new DaoException("Error connecting to the database.");
@@ -50,7 +48,7 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public TransactionDTO create(TransactionDTO transaction, Account account) {
+    public TransactionDTO create(CreateTransactionDTO transaction, Account account, boolean isSending) {
         TransactionDTO newTransaction = null;
         List<String> usernames = new ArrayList<>();
         List<UserDTO> objectsWithUsernames = jdbcUserDao.getAllUsername();
@@ -60,33 +58,41 @@ public class JdbcTransactionDao implements TransactionDao{
         }
         String sql = "INSERT INTO transaction (from_username, to_username, status, amount, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?) RETURNING transaction_id;";
+        
+        String receiver, sender;
+        
+        if(isSending) {
+            receiver = transaction.getOtherPartyUsername();
+            sender = account.getUsername();
+        } else {
+            sender = transaction.getOtherPartyUsername();
+            receiver = account.getUsername();
+        }
+        
+        
         try {
-            if (!usernames.contains(transaction.getFrom()) || !usernames.contains(transaction.getTo())) {
-                throw new DaoException("One of these users do not exist: (" + transaction.getFrom() + " / " + transaction.getTo() + "). Check your spelling.");
+            if (!usernames.contains(sender) || !usernames.contains(receiver)) {
+                throw new DaoException("One of these users do not exist: (" + sender + " / " + receiver + "). Check your spelling.");
             }
 
-            if (!transaction.getTo().equals(account.getUsername()) && !transaction.getFrom().equals(account.getUsername())) {
+            if (!receiver.equals(account.getUsername()) && !sender.equals(account.getUsername())) {
                 throw new DaoException("You're not God. You can't make transfers happen between other people.");
             }
 
-            if (transaction.getTo().equals(account.getUsername()) && transaction.getFrom().equals(account.getUsername())) {
+            if (receiver.equals(account.getUsername()) && sender.equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself.");
             }
 
-            if (transaction.getTransferAmount().compareTo(account.getBalance()) > 0) {
+            if (transaction.getTransferAmount().compareTo(account.getBalance()) > 0 || transaction.getTransferAmount().compareTo(BigDecimal.valueOf(0)) != 1) {
                 throw new DaoException("Insufficient funds.");
             }
 
-            if (transaction.getTo().equals(account.getUsername())) {
-                throw new DaoException("Try the request endpoint for requests.");
-            }
-
-            if (transaction.getFrom().equals(account.getUsername())) {
+            if (sender.equals(account.getUsername())) {
                 status = "approved";
             } else {status = "pending";}
 
             Integer newTransactionId = jdbcTemplate.queryForObject(sql, Integer.class,
-                    transaction.getFrom(), transaction.getTo(), status, transaction.getTransferAmount(), new Date());
+                    sender, receiver, status, transaction.getTransferAmount(), new Date());
 
             newTransaction = getTransactionById(newTransactionId);
         } catch (DataIntegrityViolationException e) {
@@ -96,12 +102,43 @@ public class JdbcTransactionDao implements TransactionDao{
         }
 
         if(status.equals("approved")) {
-            updateAccounts(transaction.getTo(), account.getUsername(), transaction.getTransferAmount());
+            updateAccounts(receiver, account.getUsername(), transaction.getTransferAmount());
         }
         return newTransaction;
     }
 
-    private void updateAccounts(String receiver, String sender, BigDecimal amount) {
+    @Override
+    public TransactionDTO updateTransactionStatus(TransactionDTO transaction, String status, Account myAccount) {
+        int id = transaction.getTransactionId();
+
+        // Only sender can change the status
+        if (!transaction.getFrom().equals(myAccount.getUsername())) {
+            throw new DaoException("Only sender is authorized to update transaction status!");
+        }
+
+        String sql = "UPDATE transaction SET status = ? WHERE transaction_id = ?";
+
+        if (status.equals("reject")) {
+            jdbcTemplate.update(sql, status, id);
+
+            return getTransactionById(id);
+        } else if (status.equals("approved")) {
+            // Decline if current balance is not enough
+            if (myAccount.getBalance().compareTo(transaction.getTransferAmount()) < 0) {
+                throw new DaoException("Your balance is not enough to complete this transaction.");
+            }
+
+            jdbcTemplate.update(sql, status, id);
+            updateAccounts(transaction.getTo(), transaction.getFrom(), transaction.getTransferAmount());
+
+            return getTransactionById(id);
+        }
+
+        throw new DaoException("Input status is invalid.");
+    }
+
+    @Override
+    public void updateAccounts(String receiver, String sender, BigDecimal amount) {
         String sqlReceiver = "UPDATE account AS a SET balance = balance + ? " +
                 "FROM tenmo_user AS u WHERE a.user_id = u.user_id " +
                 "AND u.username = ?";
@@ -126,12 +163,10 @@ public class JdbcTransactionDao implements TransactionDao{
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transactionId);
         if (results.next()) {
             return new TransactionDTO(results.getInt("transaction_id"), results.getBigDecimal("amount"),
-                    results.getString("to_username"), results.getString("from_username"));
+                    results.getString("from_username"), results.getString("to_username"), results.getString("status"));
         }
         throw new TransactionNotFoundException("Transaction " + transactionId + " not found.");
     }
-
-
 
 }
 

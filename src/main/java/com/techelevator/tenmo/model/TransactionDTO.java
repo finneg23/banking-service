@@ -8,14 +8,22 @@ public class TransactionDTO {
     private String to;
     private String from;
 
-    public TransactionDTO(int transactionId, BigDecimal transferAmount, String from, String to) {
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    private String status;
+
+    public TransactionDTO(int transactionId, BigDecimal transferAmount, String from, String to, String status) {
         this.transactionId = transactionId;
         this.amount = transferAmount;
         this.from = from;
         this.to = to;
-    }
-
-    public TransactionDTO() {
+        this.status = status;
     }
 
     public int getTransactionId() {
