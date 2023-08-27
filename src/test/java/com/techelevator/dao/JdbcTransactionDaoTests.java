@@ -117,13 +117,21 @@ public class JdbcTransactionDaoTests extends BaseDaoTests{
     public void updateTransactionStatusWithRejectRequest() {
         TransactionDTO res = sut3.updateTransactionStatus(transaction, "reject", myAccount);
 
-        Assert.assertEquals("reject", res.getStatus());
+        Assert.assertEquals("rejected", res.getStatus());
     }
 
     @Test
     public void updateTransactionStatusWithApproveRequest() {
-        TransactionDTO res = sut3.updateTransactionStatus(transaction, "approved", myAccount);
+        TransactionDTO res = sut3.updateTransactionStatus(transaction, "approve", myAccount);
 
         Assert.assertEquals("approved", res.getStatus());
+    }
+
+    @Test
+    public void allPendingTransactionsByUsernameTest() {
+        List<TransactionDTO> res = sut3.allPendingTransactionsByUsername("bob");
+
+        Assert.assertEquals(3001, res.get(0).getTransactionId());
+        Assert.assertEquals(1, res.size());
     }
 }

@@ -71,13 +71,17 @@ public class JdbcTransactionDao implements TransactionDao{
         
         
         try {
+            if (transaction.getTransferAmount().scale() > 2) {
+                throw new DaoException("Please keep transactions to two decimal places. (e.g. 1.50) ");
+            }
+
             if (!usernames.contains(sender) || !usernames.contains(receiver)) {
                 throw new DaoException("One of these users do not exist: (" + sender + " / " + receiver + "). Check your spelling.");
             }
 
             if (!receiver.equals(account.getUsername()) && !sender.equals(account.getUsername())) {
                 throw new DaoException("You're not God. You can't make transfers happen between other people.");
-            }
+            } // this can no longer be thrown due to refactoring, but was kinda cool :D
 
             if (receiver.equals(account.getUsername()) && sender.equals(account.getUsername())) {
                 throw new DaoException("You cannot make a transaction to yourself.");
@@ -110,31 +114,53 @@ public class JdbcTransactionDao implements TransactionDao{
     @Override
     public TransactionDTO updateTransactionStatus(TransactionDTO transaction, String status, Account myAccount) {
         int id = transaction.getTransactionId();
-
-        // Only sender can change the status
+        String statusApproved = "approved";
+        String statusRejected = "rejected";
         if (!transaction.getFrom().equals(myAccount.getUsername())) {
-            throw new DaoException("Only sender is authorized to update transaction status!");
+            throw new DaoException("Only the sender is authorized to update transaction status.");
         }
 
         String sql = "UPDATE transaction SET status = ? WHERE transaction_id = ?";
 
         if (status.equals("reject")) {
-            jdbcTemplate.update(sql, status, id);
+            jdbcTemplate.update(sql, statusRejected, id);
 
             return getTransactionById(id);
-        } else if (status.equals("approved")) {
+        } else if (status.equals("approve")) {
             // Decline if current balance is not enough
             if (myAccount.getBalance().compareTo(transaction.getTransferAmount()) < 0) {
                 throw new DaoException("Your balance is not enough to complete this transaction.");
             }
 
-            jdbcTemplate.update(sql, status, id);
+            jdbcTemplate.update(sql, statusApproved, id);
             updateAccounts(transaction.getTo(), transaction.getFrom(), transaction.getTransferAmount());
 
             return getTransactionById(id);
         }
 
-        throw new DaoException("Input status is invalid.");
+        throw new DaoException("Input status is invalid. Make sure to enter 'approve' or 'reject'.");
+    }
+
+    @Override
+    public List<TransactionDTO> allPendingTransactionsByUsername(String username) {
+        List<TransactionDTO> transactionDTOList = new ArrayList<>();
+        String sql1 = "SELECT transaction_id, amount, from_username, to_username, status FROM " +
+                "transaction WHERE status = 'pending' AND (from_username = ? OR to_username = ?);";
+
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql1, username, username);
+            while (results.next()) {
+                transactionDTOList.add(
+                        new TransactionDTO(results.getInt("transaction_id"), results.getBigDecimal("amount"),
+                                results.getString("from_username"), results.getString("to_username"), results.getString("status")));
+            }
+        } catch(CannotGetJdbcConnectionException e) {
+            throw new DaoException("Error connecting to the database.");
+        } catch(DataIntegrityViolationException e) {
+            throw new DaoException("The integrity of the data will be compromised.");
+        }
+
+        return transactionDTOList;
     }
 
     @Override

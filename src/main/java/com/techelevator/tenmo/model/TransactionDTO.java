@@ -58,10 +58,3 @@ public class TransactionDTO {
         this.from = from;
     }
 }
-
-/*
-{
-"toUser" : "Jessie",
-"amount" : "100"
-}
- */

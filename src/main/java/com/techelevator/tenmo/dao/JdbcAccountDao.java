@@ -36,18 +36,6 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public Account getAccountById(int accountId) throws AccountNotFoundException {
-        String sql =    "SELECT account_id, balance " +
-                "FROM account " +
-                "WHERE account_id = ?;";
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
-            if (results.next()) {
-                return mapRowToAccount(results);
-            }
-        throw new AccountNotFoundException("Account " + accountId + " was not found.");
-    }
-
-    @Override
     public PrimaryAccountDTO findAccountByUsername(String username) {
         PrimaryAccountDTO foundAccount = new PrimaryAccountDTO();
         String sql =    "SELECT tenmo_user.username, balance " +
@@ -62,39 +50,6 @@ public class JdbcAccountDao implements AccountDao{
         return foundAccount;
     }
 
-    @Override
-    public Account createAccount(Account account) {
-        Account newAccount = null;
-        String sql = "INSERT INTO account (user_id, balance) " +
-                "VALUES (?, 1000) RETURNING account_id;";
-        Integer newAccountId;
-        try {
-            newAccountId = jdbcTemplate.queryForObject(sql, Integer.class, account.getUserId());
-            newAccount = getAccountById(newAccountId);
-        } catch(CannotGetJdbcConnectionException e) {
-            throw new DaoException("Error connecting to database.");
-        } catch(DataIntegrityViolationException e) {
-            throw new DaoException("The integrity of the data will be compromised.");
-        } catch(NullPointerException e) {
-            throw new DaoException("The account id was found to be null.");
-        } catch(AccountNotFoundException e) {
-            throw new DaoException("Account was not created properly.");
-        }
-        return newAccount;
-    }
-
-
-    @Override
-    public BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException {
-        String sql =    "SELECT balance " +
-                "FROM account " +
-                "WHERE account_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
-        if (results.next()) {
-            return results.getBigDecimal("balance");
-        }
-        throw new AccountNotFoundException("Account " + accountId + " was not found.");
-    }
 
 
     private Account mapRowToAccount(SqlRowSet results) {
@@ -104,4 +59,49 @@ public class JdbcAccountDao implements AccountDao{
         account.setBalance(results.getBigDecimal("balance"));
         return account;
     }
+
+//    @Override
+//    public BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException {
+//        String sql =    "SELECT balance " +
+//                "FROM account " +
+//                "WHERE account_id = ?;";
+//        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+//        if (results.next()) {
+//            return results.getBigDecimal("balance");
+//        }
+//        throw new AccountNotFoundException("Account " + accountId + " was not found.");
+//    }
+
+//    @Override
+//    public Account getAccountById(int accountId) throws AccountNotFoundException {
+//        String sql =    "SELECT account_id, balance " +
+//                "FROM account " +
+//                "WHERE account_id = ?;";
+//        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+//        if (results.next()) {
+//            return mapRowToAccount(results);
+//        }
+//        throw new AccountNotFoundException("Account " + accountId + " was not found.");
+//    }
+
+//    @Override
+//    public Account createAccount(String loggedInUser) {
+//        Account newAccount = null;
+//        String sql = "INSERT INTO account (user_id, balance) " +
+//                "VALUES ((SELECT user_id FROM tenmo_user WHERE username ILIKE ?), 1000) RETURNING account_id;";
+//        Integer newAccountId;
+//        try {
+//            newAccountId = jdbcTemplate.queryForObject(sql, Integer.class, loggedInUser);
+//            newAccount = getAccountById(newAccountId);
+//        } catch(CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Error connecting to database.");
+//        } catch(DataIntegrityViolationException e) {
+//            throw new DaoException("The integrity of the data will be compromised.");
+//        } catch(NullPointerException e) {
+//            throw new DaoException("The account id was found to be null.");
+//        } catch(AccountNotFoundException e) {
+//            throw new DaoException("Account was not created properly.");
+//        }
+//        return newAccount;
+//    }
 }

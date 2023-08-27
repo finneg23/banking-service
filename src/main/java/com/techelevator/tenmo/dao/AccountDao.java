@@ -9,10 +9,10 @@ import java.util.List;
 
 public interface AccountDao {
     Account getAccount(String username);
-    Account getAccountById(int accountId) throws AccountNotFoundException;
     PrimaryAccountDTO findAccountByUsername(String username);
-    Account createAccount(Account account);
-    BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException;
 
+    //      Account getAccountById(int accountId) throws AccountNotFoundException;
+    //      BigDecimal getBalanceByAccountId(int accountId) throws AccountNotFoundException;
+    //      Account createAccount(String username);
 }
 

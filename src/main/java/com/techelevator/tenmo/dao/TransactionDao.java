@@ -18,4 +18,5 @@ public interface TransactionDao {
     void updateAccounts(String receiver, String sender, BigDecimal amount);
 
     TransactionDTO getTransactionById(int transactionId);
+    List<TransactionDTO> allPendingTransactionsByUsername(String username);
 }

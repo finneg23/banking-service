@@ -18,10 +18,15 @@ public class AccountController {
         this.accountDao = accountDao;
     }
 
-    @GetMapping(path ="/accounts")
-    public PrimaryAccountDTO getAccount(Principal principal){
+    @GetMapping(path = "/accounts")
+    public PrimaryAccountDTO getAccount(Principal principal) {
         return accountDao.findAccountByUsername(principal.getName());
     }
 
+//    @PostMapping(path = "/accounts")
+//    public Account createAccount(Principal principal) {
+//        return accountDao.createAccount(principal.getName());
+//    }
+//TODO implement above handler method only when we're sure we can handle multiple accounts
 
 }

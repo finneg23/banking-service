@@ -33,6 +33,11 @@ public class TransferController {
         return transactionDao.allTransactionsByUsername(principal.getName());
     }
 
+    @GetMapping(path = "/transactions/pending")
+    public List<TransactionDTO> getAllPendingTransactions(Principal principal) {
+        return transactionDao.allPendingTransactionsByUsername(principal.getName());
+    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "/transactions/send")
     public TransactionDTO createSendTransaction(@Valid @RequestBody CreateTransactionDTO transaction, Principal principal) {
